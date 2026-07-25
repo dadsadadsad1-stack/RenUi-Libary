@@ -3099,6 +3099,7 @@ function Library.new(config)
 	self.LoadingScreen  = G["1f"]
 	self.LoadingMain    = G["20"]
 	self.Window         = G["27"]
+	self.UIHolder       = G["29"]
 	self.MainFrame      = G["2b"]
 	self.Page           = G["2c"]
 	self.PageHeader     = G["2d"]
@@ -3146,9 +3147,18 @@ function Library.new(config)
 	self.SelectPopup.Visible = false
 	self.Tabs = {}
 	self.ActiveTab = nil
+	self.MinSize = config.MinSize or Vector2.new(560, 380)
+	self.MaxSize = config.MaxSize or Vector2.new(1600, 1000)
+	if config.Size then
+		self.UIHolder.Size = config.Size
+	end
+	self._windowGoalSize = self.UIHolder.Size
 	self:_SetupWindowDrag()
 	self:_SetupWindowAnimations()
 	self:_SetupPageExit()
+	if config.Resizable ~= false then
+		self:_SetupResizeGrip()
+	end
 	if config.Key then
 		self:_SetupKeySystem(config)
 	else
@@ -3163,12 +3173,10 @@ end
 function Library:_SetupWindowDrag()
 end
 function Library:_SetupWindowAnimations()
-	local holder = self.MainFrame
-	local nav = self.NavFrame
-	local mfGoalSize = holder.Size
-	local navGoalPos = nav.Position
-	holder.Size = UDim2.new(mfGoalSize.X.Scale * 0.9, mfGoalSize.X.Offset, mfGoalSize.Y.Scale * 0.9, mfGoalSize.Y.Offset)
-	Tween(holder, SPRING, { Size = mfGoalSize })
+	local holder = self.UIHolder
+	local goalSize = self._windowGoalSize or holder.Size
+	holder.Size = UDim2.new(goalSize.X.Scale * 0.92, goalSize.X.Offset * 0.92, goalSize.Y.Scale * 0.92, goalSize.Y.Offset * 0.92)
+	Tween(holder, SPRING, { Size = goalSize })
 end
 function Library:_SetupPageExit()
 	if self.PageExitBtn then
@@ -3178,6 +3186,70 @@ function Library:_SetupPageExit()
 		end)
 	end
 end
+function Library:_SetupResizeGrip()
+	local grip = Instance.new("TextButton")
+	grip.Name = "ResizeGrip"
+	grip.Size = UDim2.new(0, 20, 0, 20)
+	grip.AnchorPoint = Vector2.new(1, 1)
+	grip.Position = UDim2.new(1, -2, 1, -2)
+	grip.BackgroundTransparency = 1
+	grip.Text = ""
+	grip.ZIndex = 100
+	grip.Parent = self.UIHolder
+	local mark = Instance.new("Frame")
+	mark.AnchorPoint = Vector2.new(1, 1)
+	mark.Position = UDim2.new(1, -3, 1, -3)
+	mark.Size = UDim2.new(0, 10, 0, 10)
+	mark.BackgroundTransparency = 0.5
+	mark.BackgroundColor3 = Color3.fromRGB(193, 193, 233)
+	mark.BorderSizePixel = 0
+	mark.Rotation = 45
+	mark.Parent = grip
+	local dragging = false
+	local startMouse, startSize
+	grip.MouseEnter:Connect(function()
+		Tween(mark, FAST, { BackgroundTransparency = 0 })
+	end)
+	grip.MouseLeave:Connect(function()
+		if not dragging then
+			Tween(mark, FAST, { BackgroundTransparency = 0.5 })
+		end
+	end)
+	grip.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			startMouse = UserInputService:GetMouseLocation()
+			startSize = self.UIHolder.AbsoluteSize
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local mouse = UserInputService:GetMouseLocation()
+			local delta = mouse - startMouse
+			local newW = math.clamp(startSize.X + delta.X, self.MinSize.X, self.MaxSize.X)
+			local newH = math.clamp(startSize.Y + delta.Y, self.MinSize.Y, self.MaxSize.Y)
+			local newSize = UDim2.new(0, newW, 0, newH)
+			self.UIHolder.Size = newSize
+			self._windowGoalSize = newSize
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if dragging then
+				dragging = false
+				Tween(mark, FAST, { BackgroundTransparency = 0.5 })
+			end
+		end
+	end)
+end
+function Library:SetSize(size, animate)
+	self._windowGoalSize = size
+	if animate == false then
+		self.UIHolder.Size = size
+	else
+		Tween(self.UIHolder, SPRING, { Size = size })
+	end
+end
 function Library:Toggle(visible)
 	local goal = visible
 	if goal == nil then
@@ -3185,12 +3257,14 @@ function Library:Toggle(visible)
 	end
 	if goal then
 		self.Window.Visible = true
-		self.MainFrame.Size = UDim2.new(0,0,0,0)
-		Tween(self.MainFrame, SPRING, { Size = self._mainFrameGoalSize or self.MainFrame.Size })
+		local target = self._windowGoalSize or self.UIHolder.Size
+		self.UIHolder.Size = UDim2.new(target.X.Scale * 0.7, target.X.Offset * 0.7, target.Y.Scale * 0.7, target.Y.Offset * 0.7)
+		Tween(self.UIHolder, SPRING, { Size = target })
 	else
-		local tw = Tween(self.MainFrame, SMOOTH, { Size = UDim2.new(0,0,0,0) })
+		local tw = Tween(self.UIHolder, SMOOTH, { Size = UDim2.new(0, 0, 0, 0) })
 		tw.Completed:Connect(function()
 			self.Window.Visible = false
+			self.UIHolder.Size = self._windowGoalSize or self.UIHolder.Size
 		end)
 	end
 end
@@ -3330,10 +3404,27 @@ function Library:_SelectTab(tab)
 	Tween(tab.PageGroup, FAST, { GroupTransparency = 0 })
 	Tween(tab.Button, FAST, { BackgroundTransparency = 0.5 })
 end
+local function SetGuiObjectAlpha(obj, alpha, info)
+	if obj:IsA("Frame") or obj:IsA("TextButton") or obj:IsA("TextBox") then
+		Tween(obj, info, { BackgroundTransparency = alpha })
+	elseif obj:IsA("ImageLabel") or obj:IsA("ImageButton") then
+		Tween(obj, info, { BackgroundTransparency = alpha, ImageTransparency = alpha })
+	elseif obj:IsA("TextLabel") then
+		Tween(obj, info, { BackgroundTransparency = alpha, TextTransparency = alpha })
+	end
+end
 local function ApplyToggleVisual(onFrame, offFrame, state, instant)
-	local info = instant and TweenInfo.new(0) or FAST
-	Tween(onFrame, info, { ImageTransparency = state and 0 or 1 })
-	Tween(offFrame, info, { ImageTransparency = state and 1 or 0 })
+	local info = instant and TweenInfo.new(0) or SMOOTH
+	local onAlpha = state and 0 or 1
+	local offAlpha = state and 1 or 0
+	SetGuiObjectAlpha(onFrame, onAlpha, info)
+	for _, d in ipairs(onFrame:GetDescendants()) do
+		if d:IsA("GuiObject") then SetGuiObjectAlpha(d, onAlpha, info) end
+	end
+	SetGuiObjectAlpha(offFrame, offAlpha, info)
+	for _, d in ipairs(offFrame:GetDescendants()) do
+		if d:IsA("GuiObject") then SetGuiObjectAlpha(d, offAlpha, info) end
+	end
 end
 function Library:CreateToggle(tab, opts)
 	opts = opts or {}
@@ -3346,6 +3437,8 @@ function Library:CreateToggle(tab, opts)
 	local switch = row:FindFirstChild("ToggleBtn")
 	local onImg = switch:FindFirstChild("ON")
 	local offImg = switch:FindFirstChild("OFF")
+	onImg.Visible = true
+	offImg.Visible = true
 	if nameLabel then nameLabel.Text = opts.Name or "Toggle" end
 	if descLabel then
 		if opts.Description then
@@ -3370,6 +3463,11 @@ function Library:CreateToggle(tab, opts)
 		state = newState
 		toggleObj.Value = state
 		ApplyToggleVisual(onImg, offImg, state)
+		local baseSize = switch.Size
+		Tween(switch, FAST, { Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, baseSize.Y.Scale * 0.85, baseSize.Y.Offset) })
+		task.delay(0.08, function()
+			Tween(switch, SPRING, { Size = baseSize })
+		end)
 		if not silent and opts.Callback then
 			task.spawn(opts.Callback, state)
 		end
