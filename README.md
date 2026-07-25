@@ -1,5 +1,5 @@
 # RenUi
-
+![RenUi Preview](https://i.ibb.co/HTLv7xH9/image.webp)
 RenUi is a UI library made for people building Roblox script hubs who want something that doesn't look like it was thrown together in five minutes. It comes with a proper key system, a loading screen, animated windows, and a full set of components (toggles, sliders, keybinds, dropdowns, you name it) so you can focus on your actual script logic instead of fighting with GUI code.
 
 Everything's animated by default  windows pop in instead of just appearing, buttons react when you hover over them, dropdowns expand smoothly, and notifications slide in instead of just popping into existence. It's the kind of polish that's easy to skip when you're building your own UI from scratch, so it's just built in here.
