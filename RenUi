@@ -3269,28 +3269,35 @@ function Library:CreateTab(name, iconId)
 	if label then label.Text = name end
 	if logo and iconId then logo.Image = iconId end
 	btn.Parent = self.NavScroll
+	local pageGroup = Instance.new("CanvasGroup")
+	pageGroup.Name = name .. "Page"
+	pageGroup.Size = self.PageContent.Size
+	pageGroup.Position = self.PageContent.Position
+	pageGroup.AnchorPoint = self.PageContent.AnchorPoint
+	pageGroup.BackgroundTransparency = 1
+	pageGroup.BorderSizePixel = 0
+	pageGroup.GroupTransparency = 0
+	pageGroup.Visible = false
+	pageGroup.Parent = self.PageContent.Parent
 	local page = Instance.new("ScrollingFrame")
-	page.Name = name .. "Page"
-	page.Size = self.PageContent.Size
-	page.Position = self.PageContent.Position
-	page.AnchorPoint = self.PageContent.AnchorPoint
+	page.Name = "Content"
+	page.Size = UDim2.new(1, 0, 1, 0)
 	page.BackgroundTransparency = 1
 	page.BorderSizePixel = 0
 	page.ScrollBarThickness = self.PageContent.ScrollBarThickness
 	page.CanvasSize = UDim2.new(0, 0, 0, 0)
 	page.AutomaticCanvasSize = Enum.AutomaticSize.Y
-	page.Visible = false
-	page.Parent = self.PageContent.Parent
+	page.Parent = pageGroup
 	local list = Instance.new("UIListLayout")
 	list.SortOrder = Enum.SortOrder.LayoutOrder
 	list.Padding = self.PageContent:FindFirstChildOfClass("UIListLayout") and self.PageContent:FindFirstChildOfClass("UIListLayout").Padding or UDim.new(0, 8)
 	list.Parent = page
-	local goalTransparency = 0.5
 	BindHover(btn, { grow = false })
 	local tab = {
 		Name = name,
 		Button = btn,
 		Page = page,
+		PageGroup = pageGroup,
 		_lib = self,
 	}
 	btn.MouseButton1Click:Connect(function()
@@ -3310,14 +3317,17 @@ function Library:_SelectTab(tab)
 		self.PageName.Text = tab.Name
 	end
 	if previous then
-		local oldPage = previous.Page
-		local tw = Tween(oldPage, FAST, { GroupTransparency = 1 })
+		local oldGroup = previous.PageGroup
+		Tween(oldGroup, FAST, { GroupTransparency = 1 })
 		task.delay(0.12, function()
-			oldPage.Visible = false
+			oldGroup.Visible = false
+			oldGroup.GroupTransparency = 0
 		end)
 		Tween(previous.Button, FAST, { BackgroundTransparency = 1 })
 	end
-	tab.Page.Visible = true
+	tab.PageGroup.GroupTransparency = 1
+	tab.PageGroup.Visible = true
+	Tween(tab.PageGroup, FAST, { GroupTransparency = 0 })
 	Tween(tab.Button, FAST, { BackgroundTransparency = 0.5 })
 end
 local function ApplyToggleVisual(onFrame, offFrame, state, instant)
