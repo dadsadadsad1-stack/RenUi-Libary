@@ -3059,6 +3059,8 @@ end
 local FAST  = TweenInfo.new(0.12, Enum.EasingStyle.Quad,  Enum.EasingDirection.Out)
 local SMOOTH= TweenInfo.new(0.22, Enum.EasingStyle.Quad,  Enum.EasingDirection.Out)
 local SPRING= TweenInfo.new(0.28, Enum.EasingStyle.Back,  Enum.EasingDirection.Out)
+local OPEN_EASE  = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local CLOSE_EASE = TweenInfo.new(0.20, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 local function Tween(obj, info, props)
 	local tw = TweenService:Create(obj, info, props)
 	tw:Play()
@@ -3147,6 +3149,18 @@ function Library.new(config)
 		end
 	end
 	self.SelectPopup.Visible = false
+	self.Popup.Visible = false
+	do
+		local pos, size = self.SelectPopup.Position, self.SelectPopup.Size
+		local anchor = self.SelectPopup.AnchorPoint
+		local centerX = pos.X.Scale + size.X.Scale * (0.5 - anchor.X)
+		local centerY = pos.Y.Scale + size.Y.Scale * (0.5 - anchor.Y)
+		self.SelectPopup.AnchorPoint = Vector2.new(0.5, 0.5)
+		self.SelectPopup.Position = UDim2.new(centerX, 0, centerY, 0)
+	end
+	self._popupGoalSize = self.SelectPopup.Size
+	self._popupBaseAlpha = self.SelectPopup.BackgroundTransparency
+	self._backdropBaseAlpha = self.Popup.BackgroundTransparency
 	self.Tabs = {}
 	self.ActiveTab = nil
 	self.MinSize = config.MinSize or Vector2.new(560, 380)
@@ -3155,9 +3169,11 @@ function Library.new(config)
 		self.UIHolder.Size = config.Size
 	end
 	self._windowGoalSize = self.UIHolder.Size
+	self._windowBaseAlpha = self.UIHolder.BackgroundTransparency
 	self:_SetupWindowDrag()
 	self:_SetupWindowAnimations()
 	self:_SetupPageExit()
+	self:_SetupPopupExit()
 	if config.Resizable ~= false then
 		self:_SetupResizeGrip()
 	end
@@ -3177,8 +3193,10 @@ end
 function Library:_SetupWindowAnimations()
 	local holder = self.UIHolder
 	local goalSize = self._windowGoalSize or holder.Size
-	holder.Size = UDim2.new(goalSize.X.Scale * 0.92, goalSize.X.Offset * 0.92, goalSize.Y.Scale * 0.92, goalSize.Y.Offset * 0.92)
-	Tween(holder, SPRING, { Size = goalSize })
+	local goalAlpha = self._windowBaseAlpha or holder.BackgroundTransparency
+	holder.BackgroundTransparency = 1
+	holder.Size = UDim2.new(goalSize.X.Scale * 0.96, goalSize.X.Offset * 0.96, goalSize.Y.Scale * 0.96, goalSize.Y.Offset * 0.96)
+	Tween(holder, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
 end
 function Library:_SetupPageExit()
 	if self.PageExitBtn then
@@ -3249,24 +3267,76 @@ function Library:SetSize(size, animate)
 	if animate == false then
 		self.UIHolder.Size = size
 	else
-		Tween(self.UIHolder, SPRING, { Size = size })
+		Tween(self.UIHolder, OPEN_EASE, { Size = size })
 	end
+end
+function Library:_SetupPopupExit()
+	if not self.PopupExitBtn then return end
+	BindHover(self.PopupExitBtn, { grow = false })
+	self.PopupExitBtn.MouseButton1Click:Connect(function()
+		self:_HidePopup()
+	end)
+end
+function Library:_ShowPopup()
+	if self._popupToggling then return end
+	self._popupToggling = true
+	self.Popup.Visible = true
+	self.SelectPopup.Visible = true
+	local goalSize = self._popupGoalSize or self.SelectPopup.Size
+	local goalAlpha = self._popupBaseAlpha or 0
+	local backdropAlpha = self._backdropBaseAlpha or 0.34
+	local shrunk = UDim2.new(goalSize.X.Scale * 0.94, goalSize.X.Offset * 0.94, goalSize.Y.Scale * 0.94, goalSize.Y.Offset * 0.94)
+	self.Popup.BackgroundTransparency = 1
+	self.SelectPopup.Size = shrunk
+	self.SelectPopup.BackgroundTransparency = 1
+	Tween(self.Popup, OPEN_EASE, { BackgroundTransparency = backdropAlpha })
+	local tw = Tween(self.SelectPopup, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
+	tw.Completed:Connect(function()
+		self._popupToggling = false
+	end)
+end
+function Library:_HidePopup()
+	if self._popupToggling then return end
+	self._popupToggling = true
+	local goalSize = self._popupGoalSize or self.SelectPopup.Size
+	local shrunk = UDim2.new(goalSize.X.Scale * 0.94, goalSize.X.Offset * 0.94, goalSize.Y.Scale * 0.94, goalSize.Y.Offset * 0.94)
+	Tween(self.Popup, CLOSE_EASE, { BackgroundTransparency = 1 })
+	local tw = Tween(self.SelectPopup, CLOSE_EASE, { Size = shrunk, BackgroundTransparency = 1 })
+	tw.Completed:Connect(function()
+		self.SelectPopup.Visible = false
+		self.Popup.Visible = false
+		self.SelectPopup.Size = goalSize
+		self.SelectPopup.BackgroundTransparency = self._popupBaseAlpha or 0
+		self._popupToggling = false
+	end)
 end
 function Library:Toggle(visible)
 	local goal = visible
 	if goal == nil then
 		goal = not self.Window.Visible
 	end
+	local goalSize = self._windowGoalSize or self.UIHolder.Size
+	local goalAlpha = self._windowBaseAlpha or self.UIHolder.BackgroundTransparency
+	local shrunkSize = UDim2.new(goalSize.X.Scale * 0.96, goalSize.X.Offset * 0.96, goalSize.Y.Scale * 0.96, goalSize.Y.Offset * 0.96)
 	if goal then
+		if self._toggling then return end
+		self._toggling = true
 		self.Window.Visible = true
-		local target = self._windowGoalSize or self.UIHolder.Size
-		self.UIHolder.Size = UDim2.new(target.X.Scale * 0.7, target.X.Offset * 0.7, target.Y.Scale * 0.7, target.Y.Offset * 0.7)
-		Tween(self.UIHolder, SPRING, { Size = target })
+		self.UIHolder.Size = shrunkSize
+		self.UIHolder.BackgroundTransparency = 1
+		local tw = Tween(self.UIHolder, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
+		tw.Completed:Connect(function()
+			self._toggling = false
+		end)
 	else
-		local tw = Tween(self.UIHolder, SMOOTH, { Size = UDim2.new(0, 0, 0, 0) })
+		if self._toggling then return end
+		self._toggling = true
+		local tw = Tween(self.UIHolder, CLOSE_EASE, { Size = shrunkSize, BackgroundTransparency = 1 })
 		tw.Completed:Connect(function()
 			self.Window.Visible = false
-			self.UIHolder.Size = self._windowGoalSize or self.UIHolder.Size
+			self.UIHolder.Size = goalSize
+			self.UIHolder.BackgroundTransparency = goalAlpha
+			self._toggling = false
 		end)
 	end
 end
@@ -3690,10 +3760,7 @@ function Library:CreateDropdown(tab, opts)
 	local selected = opts.Default or options[1]
 	selectedLabel.Text = tostring(selected or "")
 	BindHover(opener, { grow = false })
-	local function chooseFrom(popupList)
-		self.SelectPopup.Visible = true
-		self.SelectPopup.Size = UDim2.new(self.SelectPopup.Size.X.Scale, self.SelectPopup.Size.X.Offset, 0, 0)
-		Tween(self.SelectPopup, SPRING, { Size = self._popupGoalSize or self.SelectPopup.Size })
+	local function chooseFrom()
 		for _, child in ipairs(self.PopupScroll:GetChildren()) do
 			if child:IsA("GuiObject") then child:Destroy() end
 		end
@@ -3715,28 +3782,12 @@ function Library:CreateDropdown(tab, opts)
 				selected = optionName
 				selectedLabel.Text = tostring(optionName)
 				if opts.Callback then task.spawn(opts.Callback, optionName) end
-				local tw = Tween(self.SelectPopup, FAST, { Size = UDim2.new(self.SelectPopup.Size.X.Scale, self.SelectPopup.Size.X.Offset, 0, 0) })
-				tw.Completed:Connect(function()
-					self.SelectPopup.Visible = false
-				end)
+				self:_HidePopup()
 			end)
 		end
+		self:_ShowPopup()
 	end
-	if not self._popupGoalSize then
-		self._popupGoalSize = self.SelectPopup.Size
-	end
-	opener.MouseButton1Click:Connect(function()
-		chooseFrom(options)
-	end)
-	if self.PopupExitBtn then
-		BindHover(self.PopupExitBtn, { grow = false })
-		self.PopupExitBtn.MouseButton1Click:Connect(function()
-			local tw = Tween(self.SelectPopup, FAST, { Size = UDim2.new(self.SelectPopup.Size.X.Scale, self.SelectPopup.Size.X.Offset, 0, 0) })
-			tw.Completed:Connect(function()
-				self.SelectPopup.Visible = false
-			end)
-		end)
-	end
+	opener.MouseButton1Click:Connect(chooseFrom)
 	return {
 		Get = function() return selected end,
 		Set = function(_, v)
@@ -3777,15 +3828,10 @@ function Library:Notify(title, body, duration)
 	local toggle = optRow:FindFirstChild("Toggle")
 	if toggle then toggle.Visible = false end
 	optRow.Parent = self.PopupScroll
-	self.SelectPopup.Visible = true
-	self.SelectPopup.Size = UDim2.new(self.SelectPopup.Size.X.Scale, self.SelectPopup.Size.X.Offset, 0, 0)
-	Tween(self.SelectPopup, SPRING, { Size = self._popupGoalSize or self.SelectPopup.Size })
+	self:_ShowPopup()
 	task.delay(duration, function()
-		if self.SelectPopup and self.SelectPopup.Parent then
-			local tw = Tween(self.SelectPopup, SMOOTH, { Size = UDim2.new(self.SelectPopup.Size.X.Scale, self.SelectPopup.Size.X.Offset, 0, 0) })
-			tw.Completed:Connect(function()
-				self.SelectPopup.Visible = false
-			end)
+		if self.SelectPopup and self.SelectPopup.Parent and self.SelectPopup.Visible then
+			self:_HidePopup()
 		end
 	end)
 end
