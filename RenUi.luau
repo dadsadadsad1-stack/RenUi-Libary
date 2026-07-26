@@ -3061,6 +3061,48 @@ local SMOOTH= TweenInfo.new(0.22, Enum.EasingStyle.Quad,  Enum.EasingDirection.O
 local SPRING= TweenInfo.new(0.28, Enum.EasingStyle.Back,  Enum.EasingDirection.Out)
 local OPEN_EASE  = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
 local CLOSE_EASE = TweenInfo.new(0.20, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+Library.ThemeSlots = {
+	Background  = Color3.fromRGB(30, 30, 36),
+	Surface     = Color3.fromRGB(63, 63, 76),
+	Accent      = Color3.fromRGB(193, 193, 233),
+	AccentDark  = Color3.fromRGB(86, 86, 128),
+	AccentLight = Color3.fromRGB(169, 169, 204),
+	Muted       = Color3.fromRGB(101, 101, 122),
+	Text        = Color3.fromRGB(255, 255, 255),
+	SubText     = Color3.fromRGB(123, 123, 149),
+	Danger      = Color3.fromRGB(255, 107, 132),
+}
+Library.Presets = {
+	Default = {},
+	Crimson = {
+		Accent = Color3.fromRGB(233, 110, 110),
+		AccentLight = Color3.fromRGB(240, 150, 150),
+		AccentDark = Color3.fromRGB(150, 60, 60),
+	},
+	Emerald = {
+		Accent = Color3.fromRGB(120, 220, 170),
+		AccentLight = Color3.fromRGB(160, 235, 195),
+		AccentDark = Color3.fromRGB(60, 140, 105),
+	},
+	Ocean = {
+		Accent = Color3.fromRGB(120, 180, 233),
+		AccentLight = Color3.fromRGB(160, 205, 240),
+		AccentDark = Color3.fromRGB(60, 105, 150),
+	},
+	Amber = {
+		Accent = Color3.fromRGB(233, 190, 110),
+		AccentLight = Color3.fromRGB(240, 210, 150),
+		AccentDark = Color3.fromRGB(150, 115, 55),
+	},
+	Midnight = {
+		Background = Color3.fromRGB(14, 14, 18),
+		Surface = Color3.fromRGB(30, 30, 38),
+		Accent = Color3.fromRGB(140, 140, 233),
+	},
+}
+local function ColorKey(c)
+	return math.floor(c.R * 255 + 0.5) .. "_" .. math.floor(c.G * 255 + 0.5) .. "_" .. math.floor(c.B * 255 + 0.5)
+end
 local function Tween(obj, info, props)
 	local tw = TweenService:Create(obj, info, props)
 	tw:Play()
@@ -3163,6 +3205,15 @@ function Library.new(config)
 	self._backdropBaseAlpha = self.Popup.BackgroundTransparency
 	self.Tabs = {}
 	self.ActiveTab = nil
+	self._colorMap = {}
+	self._liveColor = {}
+	self:_RegisterTheming(self.Gui)
+	for _, tmpl in pairs(self.Templates) do
+		self:_RegisterTheming(tmpl)
+	end
+	if config.Theme then
+		self:SetTheme(config.Theme, false)
+	end
 	self.MinSize = config.MinSize or Vector2.new(560, 380)
 	self.MaxSize = config.MaxSize or Vector2.new(1600, 1000)
 	if config.Size then
@@ -3188,7 +3239,92 @@ function Library.new(config)
 	end
 	return self
 end
+function Library:_RegisterTheming(root)
+	local function register(inst, prop)
+		local ok, value = pcall(function() return inst[prop] end)
+		if not ok or typeof(value) ~= "Color3" then return end
+		local key = ColorKey(value)
+		local bucket = self._colorMap[key]
+		if not bucket then
+			bucket = {}
+			self._colorMap[key] = bucket
+		end
+		table.insert(bucket, { instance = inst, prop = prop })
+		local live = self._liveColor[key]
+		if live then
+			inst[prop] = live
+		end
+	end
+	local function visit(inst)
+		if inst:IsA("GuiObject") then
+			register(inst, "BackgroundColor3")
+		end
+		if inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox") then
+			register(inst, "TextColor3")
+		end
+		if inst:IsA("ImageLabel") or inst:IsA("ImageButton") then
+			register(inst, "ImageColor3")
+		end
+	end
+	visit(root)
+	for _, d in ipairs(root:GetDescendants()) do
+		visit(d)
+	end
+end
+function Library:SetTheme(overrides, animate)
+	overrides = overrides or {}
+	if animate == nil then animate = true end
+	local info = animate and SMOOTH or TweenInfo.new(0)
+	for slot, newColor in pairs(overrides) do
+		local baseColor = Library.ThemeSlots[slot]
+		if baseColor then
+			local key = ColorKey(baseColor)
+			self._liveColor[key] = newColor
+			local bucket = self._colorMap[key]
+			if bucket then
+				for _, entry in ipairs(bucket) do
+					if entry.instance and entry.instance.Parent then
+						Tween(entry.instance, info, { [entry.prop] = newColor })
+					end
+				end
+			end
+		end
+	end
+end
+function Library:ResetTheme(animate)
+	local overrides = {}
+	for slot, color in pairs(Library.ThemeSlots) do
+		overrides[slot] = color
+	end
+	self:SetTheme(overrides, animate)
+end
 function Library:_SetupWindowDrag()
+	local handle = self.PageHeader or self.UIHolder
+	handle.Active = true
+	local dragging = false
+	local dragStart = Vector2.new(0, 0)
+	local startPos = self.UIHolder.Position
+	handle.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = true
+			dragStart = input.Position
+			startPos = self.UIHolder.Position
+		end
+	end)
+	UserInputService.InputChanged:Connect(function(input)
+		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+			local delta = input.Position - dragStart
+			self.UIHolder.Position = UDim2.new(
+				startPos.X.Scale, startPos.X.Offset + delta.X,
+				startPos.Y.Scale, startPos.Y.Offset + delta.Y
+			)
+		end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			dragging = false
+		end
+	end)
 end
 function Library:_SetupWindowAnimations()
 	local holder = self.UIHolder
@@ -3415,6 +3551,7 @@ function Library:CreateTab(name, iconId)
 	if label then label.Text = name end
 	if logo and iconId then logo.Image = iconId end
 	btn.Parent = self.NavScroll
+	self:_RegisterTheming(btn)
 	local pageGroup = Instance.new("CanvasGroup")
 	pageGroup.Name = name .. "Page"
 	pageGroup.Size = self.PageContent.Size
@@ -3504,6 +3641,7 @@ function Library:CreateToggle(tab, opts)
 	row.Name = opts.Name or "Toggle"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	local descLabel = row:FindFirstChild("FeatureDescription")
 	local switch = row:FindFirstChild("ToggleBtn")
@@ -3557,6 +3695,7 @@ function Library:CreateSlider(tab, opts)
 	row.Name = opts.Name or "Slider"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	if nameLabel then nameLabel.Text = opts.Name or "Slider" end
 	local container = row:FindFirstChild("SliderContainer")
@@ -3621,6 +3760,7 @@ function Library:CreateKeybind(tab, opts)
 	row.Name = opts.Name or "Keybind"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	local descLabel = row:FindFirstChild("FeatureDescription")
 	local input = row:FindFirstChild("KeybindInput")
@@ -3701,6 +3841,7 @@ function Library:CreateTextbox(tab, opts)
 	row.Name = opts.Name or "Textbox"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	local descLabel = row:FindFirstChild("FeatureDescription")
 	local inputHolder = row:FindFirstChild("Input")
@@ -3738,6 +3879,7 @@ function Library:CreateDropdown(tab, opts)
 	row.Name = opts.Name or "Dropdown"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	local descLabel = row:FindFirstChild("FeatureDescription")
 	local opener = row:FindFirstChild("SelecterOpener")
@@ -3771,6 +3913,7 @@ function Library:CreateDropdown(tab, opts)
 			local optLabel = optRow:FindFirstChild("WelcomeTag")
 			if optLabel then optLabel.Text = tostring(optionName) end
 			optRow.Parent = self.PopupScroll
+			self:_RegisterTheming(optRow)
 			local pickBtn = Instance.new("TextButton")
 			pickBtn.BackgroundTransparency = 1
 			pickBtn.Text = ""
@@ -3788,6 +3931,14 @@ function Library:CreateDropdown(tab, opts)
 		self:_ShowPopup()
 	end
 	opener.MouseButton1Click:Connect(chooseFrom)
+	local rowCatcher = Instance.new("TextButton")
+	rowCatcher.Name = "RowClickCatcher"
+	rowCatcher.BackgroundTransparency = 1
+	rowCatcher.Text = ""
+	rowCatcher.Size = UDim2.new(1, 0, 1, 0)
+	rowCatcher.ZIndex = 0
+	rowCatcher.Parent = row
+	rowCatcher.MouseButton1Click:Connect(chooseFrom)
 	return {
 		Get = function() return selected end,
 		Set = function(_, v)
@@ -3810,6 +3961,7 @@ function Library:CreateLabel(tab, text, order)
 	if descLabel then descLabel.Visible = false end
 	if nameLabel then nameLabel.Text = text end
 	row.Parent = tab.Page
+	self:_RegisterTheming(row)
 	return row
 end
 function Library:Notify(title, body, duration)
@@ -3828,6 +3980,7 @@ function Library:Notify(title, body, duration)
 	local toggle = optRow:FindFirstChild("Toggle")
 	if toggle then toggle.Visible = false end
 	optRow.Parent = self.PopupScroll
+	self:_RegisterTheming(optRow)
 	self:_ShowPopup()
 	task.delay(duration, function()
 		if self.SelectPopup and self.SelectPopup.Parent and self.SelectPopup.Visible then
