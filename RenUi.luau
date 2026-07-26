@@ -4185,13 +4185,13 @@ function Library.new(config)
 	self.PopupExitBtn   = G["187"]
 
 	local templates = {
-		NavBtn   = G["14f"]:Clone(),
-		Toggle   = G["b1"]:Clone(),
-		Slider   = G["60"]:Clone(),
-		Keybind  = G["10c"]:Clone(),
-		Textbox  = G["56"]:Clone(),
-		Dropdown = G["40"]:Clone(),
-		PopupOption = G["17a"]:Clone(),
+		NavBtn   = G2L["14f"]:Clone(),
+		Toggle   = G2L["b1"]:Clone(),
+		Slider   = G2L["60"]:Clone(),
+		Keybind  = G2L["10c"]:Clone(),
+		Textbox  = G2L["56"]:Clone(),
+		Dropdown = G2L["40"]:Clone(),
+		PopupOption = G2L["17a"]:Clone(),
 	}
 	self.Templates = templates
 
