@@ -4978,6 +4978,8 @@ function Library:CreateToggle(tab, opts)
 	row.Name = opts.Name or "Toggle"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 64)
 	self:_RegisterTheming(row)
 
 	local nameLabel = row:FindFirstChild("FeatureName")
@@ -5043,6 +5045,7 @@ function Library:CreateSlider(tab, opts)
 	row.Name = opts.Name or "Slider"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 56)
 	self:_RegisterTheming(row)
 
 	local nameLabel = row:FindFirstChild("FeatureName")
@@ -5136,6 +5139,7 @@ function Library:CreateKeybind(tab, opts)
 	row.Name = opts.Name or "Keybind"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 64)
 	self:_RegisterTheming(row)
 
 	local nameLabel = row:FindFirstChild("FeatureName")
@@ -5228,6 +5232,7 @@ function Library:CreateTextbox(tab, opts)
 	row.Name = opts.Name or "Textbox"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 	row.Parent = tab.Page
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 64)
 	self:_RegisterTheming(row)
 
 	local nameLabel = row:FindFirstChild("FeatureName")
@@ -5273,7 +5278,7 @@ function Library:CreateDropdown(tab, opts)
 	row.Name = opts.Name or "Dropdown"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 
-	row.Size = UDim2.new(0.9792, 0, 0.30675, 0)
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 64)
 	row.Parent = tab.Page
 	self:_RegisterTheming(row)
 
@@ -5390,6 +5395,12 @@ function Library:CreateLabel(tab, text, order)
 	if descLabel then descLabel.Visible = false end
 	if nameLabel then nameLabel.Text = text end
 	row.Parent = tab.Page
+	row.Size = UDim2.new(row.Size.X.Scale, row.Size.X.Offset, 0, 44)
+	if nameLabel then
+		nameLabel.Size = UDim2.new(nameLabel.Size.X.Scale, nameLabel.Size.X.Offset, 1, 0)
+		nameLabel.Position = UDim2.new(nameLabel.Position.X.Scale, nameLabel.Position.X.Offset, 0, 0)
+		nameLabel.TextYAlignment = Enum.TextYAlignment.Center
+	end
 	self:_RegisterTheming(row)
 	return row
 end
