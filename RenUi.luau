@@ -3059,8 +3059,8 @@ end
 local FAST  = TweenInfo.new(0.12, Enum.EasingStyle.Quad,  Enum.EasingDirection.Out)
 local SMOOTH= TweenInfo.new(0.22, Enum.EasingStyle.Quad,  Enum.EasingDirection.Out)
 local SPRING= TweenInfo.new(0.28, Enum.EasingStyle.Back,  Enum.EasingDirection.Out)
-local OPEN_EASE  = TweenInfo.new(0.32, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
-local CLOSE_EASE = TweenInfo.new(0.20, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
+local OPEN_EASE  = TweenInfo.new(0.36, Enum.EasingStyle.Quint, Enum.EasingDirection.Out)
+local CLOSE_EASE = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 Library.ThemeSlots = {
 	Background  = Color3.fromRGB(30, 30, 36),
 	Surface     = Color3.fromRGB(63, 63, 76),
@@ -3102,6 +3102,36 @@ Library.Presets = {
 }
 local function ColorKey(c)
 	return math.floor(c.R * 255 + 0.5) .. "_" .. math.floor(c.G * 255 + 0.5) .. "_" .. math.floor(c.B * 255 + 0.5)
+end
+local ICONS_SOURCE = "https://raw.githubusercontent.com/evoincorp/lucideblox/master/src/modules/util/icons.json"
+Library._iconData = nil
+Library._iconLoadAttempted = false
+function Library._LoadIcons()
+	if Library._iconData or Library._iconLoadAttempted then
+		return Library._iconData
+	end
+	Library._iconLoadAttempted = true
+	local ok, result = pcall(function()
+		local json = game:HttpGet(ICONS_SOURCE)
+		return game:GetService("HttpService"):JSONDecode(json)
+	end)
+	if ok and result and result.icons then
+		Library._iconData = result.icons
+	end
+	return Library._iconData
+end
+function Library.GetIcon(name)
+	if not name then return nil end
+	local icons = Library._LoadIcons()
+	if not icons then return nil end
+	local id = icons[name]
+	if not id then return nil end
+	return "rbxassetid://" .. tostring(id)
+end
+local function ResolveIcon(icon)
+	if type(icon) ~= "string" or icon == "" then return icon end
+	if icon:match("^rbxasset") or icon:match("^http") then return icon end
+	return Library.GetIcon(icon) or icon
 end
 local function Tween(obj, info, props)
 	local tw = TweenService:Create(obj, info, props)
@@ -3164,6 +3194,7 @@ function Library.new(config)
 	self.SelectPopup    = G["162"]
 	self.PopupTitle     = G["164"]
 	self.PopupScroll    = G["165"]
+	self.PopupListLayout = G["166"]
 	self.PopupExitBtn   = G["187"]
 	local templates = {
 		NavBtn   = G["14f"]:Clone(),
@@ -3192,6 +3223,7 @@ function Library.new(config)
 	end
 	self.SelectPopup.Visible = false
 	self.Popup.Visible = false
+	self.PopupListLayout.Padding = UDim.new(0, 6)
 	do
 		local pos, size = self.SelectPopup.Position, self.SelectPopup.Size
 		local anchor = self.SelectPopup.AnchorPoint
@@ -3201,6 +3233,7 @@ function Library.new(config)
 		self.SelectPopup.Position = UDim2.new(centerX, 0, centerY, 0)
 	end
 	self._popupGoalSize = self.SelectPopup.Size
+	self._popupGoalPos = self.SelectPopup.Position
 	self._popupBaseAlpha = self.SelectPopup.BackgroundTransparency
 	self._backdropBaseAlpha = self.Popup.BackgroundTransparency
 	self.Tabs = {}
@@ -3220,9 +3253,9 @@ function Library.new(config)
 		self.UIHolder.Size = config.Size
 	end
 	self._windowGoalSize = self.UIHolder.Size
+	self._windowGoalPos = self.UIHolder.Position
 	self._windowBaseAlpha = self.UIHolder.BackgroundTransparency
 	self:_SetupWindowDrag()
-	self:_SetupWindowAnimations()
 	self:_SetupPageExit()
 	self:_SetupPopupExit()
 	if config.Resizable ~= false then
@@ -3233,6 +3266,7 @@ function Library.new(config)
 	else
 		self.KeySystem.Visible = false
 		self.Window.Visible = true
+		self:_SetupWindowAnimations()
 	end
 	if config.Player ~= false then
 		self:_SetupPlayerInfo()
@@ -3314,10 +3348,12 @@ function Library:_SetupWindowDrag()
 	UserInputService.InputChanged:Connect(function(input)
 		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
 			local delta = input.Position - dragStart
-			self.UIHolder.Position = UDim2.new(
+			local newPos = UDim2.new(
 				startPos.X.Scale, startPos.X.Offset + delta.X,
 				startPos.Y.Scale, startPos.Y.Offset + delta.Y
 			)
+			self.UIHolder.Position = newPos
+			self._windowGoalPos = newPos
 		end
 	end)
 	UserInputService.InputEnded:Connect(function(input)
@@ -3326,13 +3362,22 @@ function Library:_SetupWindowDrag()
 		end
 	end)
 end
-function Library:_SetupWindowAnimations()
+function Library:_WindowAnimStates()
 	local holder = self.UIHolder
 	local goalSize = self._windowGoalSize or holder.Size
+	local goalPos = self._windowGoalPos or holder.Position
 	local goalAlpha = self._windowBaseAlpha or holder.BackgroundTransparency
+	local startSize = UDim2.new(goalSize.X.Scale * 0.95, goalSize.X.Offset * 0.95, goalSize.Y.Scale * 0.95, goalSize.Y.Offset * 0.95)
+	local startPos = UDim2.new(goalPos.X.Scale, goalPos.X.Offset, goalPos.Y.Scale, goalPos.Y.Offset + 18)
+	return goalSize, goalPos, goalAlpha, startSize, startPos
+end
+function Library:_SetupWindowAnimations()
+	local holder = self.UIHolder
+	local goalSize, goalPos, goalAlpha, startSize, startPos = self:_WindowAnimStates()
+	holder.Size = startSize
+	holder.Position = startPos
 	holder.BackgroundTransparency = 1
-	holder.Size = UDim2.new(goalSize.X.Scale * 0.96, goalSize.X.Offset * 0.96, goalSize.Y.Scale * 0.96, goalSize.Y.Offset * 0.96)
-	Tween(holder, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
+	Tween(holder, OPEN_EASE, { Size = goalSize, Position = goalPos, BackgroundTransparency = goalAlpha })
 end
 function Library:_SetupPageExit()
 	if self.PageExitBtn then
@@ -3419,14 +3464,17 @@ function Library:_ShowPopup()
 	self.Popup.Visible = true
 	self.SelectPopup.Visible = true
 	local goalSize = self._popupGoalSize or self.SelectPopup.Size
+	local goalPos = self._popupGoalPos or self.SelectPopup.Position
 	local goalAlpha = self._popupBaseAlpha or 0
 	local backdropAlpha = self._backdropBaseAlpha or 0.34
-	local shrunk = UDim2.new(goalSize.X.Scale * 0.94, goalSize.X.Offset * 0.94, goalSize.Y.Scale * 0.94, goalSize.Y.Offset * 0.94)
+	local shrunk = UDim2.new(goalSize.X.Scale * 0.92, goalSize.X.Offset * 0.92, goalSize.Y.Scale * 0.92, goalSize.Y.Offset * 0.92)
+	local startPos = UDim2.new(goalPos.X.Scale, goalPos.X.Offset, goalPos.Y.Scale, goalPos.Y.Offset + 14)
 	self.Popup.BackgroundTransparency = 1
 	self.SelectPopup.Size = shrunk
+	self.SelectPopup.Position = startPos
 	self.SelectPopup.BackgroundTransparency = 1
 	Tween(self.Popup, OPEN_EASE, { BackgroundTransparency = backdropAlpha })
-	local tw = Tween(self.SelectPopup, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
+	local tw = Tween(self.SelectPopup, OPEN_EASE, { Size = goalSize, Position = goalPos, BackgroundTransparency = goalAlpha })
 	tw.Completed:Connect(function()
 		self._popupToggling = false
 	end)
@@ -3435,13 +3483,16 @@ function Library:_HidePopup()
 	if self._popupToggling then return end
 	self._popupToggling = true
 	local goalSize = self._popupGoalSize or self.SelectPopup.Size
-	local shrunk = UDim2.new(goalSize.X.Scale * 0.94, goalSize.X.Offset * 0.94, goalSize.Y.Scale * 0.94, goalSize.Y.Offset * 0.94)
+	local goalPos = self._popupGoalPos or self.SelectPopup.Position
+	local shrunk = UDim2.new(goalSize.X.Scale * 0.92, goalSize.X.Offset * 0.92, goalSize.Y.Scale * 0.92, goalSize.Y.Offset * 0.92)
+	local endPos = UDim2.new(goalPos.X.Scale, goalPos.X.Offset, goalPos.Y.Scale, goalPos.Y.Offset + 14)
 	Tween(self.Popup, CLOSE_EASE, { BackgroundTransparency = 1 })
-	local tw = Tween(self.SelectPopup, CLOSE_EASE, { Size = shrunk, BackgroundTransparency = 1 })
+	local tw = Tween(self.SelectPopup, CLOSE_EASE, { Size = shrunk, Position = endPos, BackgroundTransparency = 1 })
 	tw.Completed:Connect(function()
 		self.SelectPopup.Visible = false
 		self.Popup.Visible = false
 		self.SelectPopup.Size = goalSize
+		self.SelectPopup.Position = goalPos
 		self.SelectPopup.BackgroundTransparency = self._popupBaseAlpha or 0
 		self._popupToggling = false
 	end)
@@ -3451,26 +3502,26 @@ function Library:Toggle(visible)
 	if goal == nil then
 		goal = not self.Window.Visible
 	end
-	local goalSize = self._windowGoalSize or self.UIHolder.Size
-	local goalAlpha = self._windowBaseAlpha or self.UIHolder.BackgroundTransparency
-	local shrunkSize = UDim2.new(goalSize.X.Scale * 0.96, goalSize.X.Offset * 0.96, goalSize.Y.Scale * 0.96, goalSize.Y.Offset * 0.96)
+	local goalSize, goalPos, goalAlpha, startSize, startPos = self:_WindowAnimStates()
 	if goal then
 		if self._toggling then return end
 		self._toggling = true
 		self.Window.Visible = true
-		self.UIHolder.Size = shrunkSize
+		self.UIHolder.Size = startSize
+		self.UIHolder.Position = startPos
 		self.UIHolder.BackgroundTransparency = 1
-		local tw = Tween(self.UIHolder, OPEN_EASE, { Size = goalSize, BackgroundTransparency = goalAlpha })
+		local tw = Tween(self.UIHolder, OPEN_EASE, { Size = goalSize, Position = goalPos, BackgroundTransparency = goalAlpha })
 		tw.Completed:Connect(function()
 			self._toggling = false
 		end)
 	else
 		if self._toggling then return end
 		self._toggling = true
-		local tw = Tween(self.UIHolder, CLOSE_EASE, { Size = shrunkSize, BackgroundTransparency = 1 })
+		local tw = Tween(self.UIHolder, CLOSE_EASE, { Size = startSize, Position = startPos, BackgroundTransparency = 1 })
 		tw.Completed:Connect(function()
 			self.Window.Visible = false
 			self.UIHolder.Size = goalSize
+			self.UIHolder.Position = goalPos
 			self.UIHolder.BackgroundTransparency = goalAlpha
 			self._toggling = false
 		end)
@@ -3549,7 +3600,7 @@ function Library:CreateTab(name, iconId)
 	local logo = btn:FindFirstChild("BtnLogo")
 	local label = btn:FindFirstChild("BtnName")
 	if label then label.Text = name end
-	if logo and iconId then logo.Image = iconId end
+	if logo and iconId then logo.Image = ResolveIcon(iconId) end
 	btn.Parent = self.NavScroll
 	self:_RegisterTheming(btn)
 	local pageGroup = Instance.new("CanvasGroup")
@@ -3591,6 +3642,52 @@ function Library:CreateTab(name, iconId)
 		self:_SelectTab(tab)
 	end
 	return tab
+end
+function Library:CreateSection(tab, name, icon)
+	local header = Instance.new("Frame")
+	header.Name = "Section_" .. name
+	header.BackgroundTransparency = 1
+	header.Size = UDim2.new(1, 0, 0, 30)
+	header.LayoutOrder = #tab.Page:GetChildren()
+	header.Parent = tab.Page
+	local sample = self.Templates.Toggle:FindFirstChild("FeatureName")
+	local font = sample and sample.FontFace or Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	local xOffset = 0
+	if icon then
+		local iconLabel = Instance.new("ImageLabel")
+		iconLabel.Name = "SectionIcon"
+		iconLabel.BackgroundTransparency = 1
+		iconLabel.AnchorPoint = Vector2.new(0, 0.5)
+		iconLabel.Position = UDim2.new(0, 2, 0.5, 0)
+		iconLabel.Size = UDim2.new(0, 16, 0, 16)
+		iconLabel.Image = ResolveIcon(icon)
+		iconLabel.ImageColor3 = Library.ThemeSlots.SubText
+		iconLabel.Parent = header
+		xOffset = 22
+	end
+	local label = Instance.new("TextLabel")
+	label.Name = "SectionLabel"
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, xOffset + 2, 0, 0)
+	label.Size = UDim2.new(1, -(xOffset + 8), 1, 0)
+	label.Text = string.upper(name)
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.TextSize = 13
+	label.FontFace = font
+	label.TextColor3 = Library.ThemeSlots.SubText
+	label.Parent = header
+	local divider = Instance.new("Frame")
+	divider.Name = "SectionDivider"
+	divider.AnchorPoint = Vector2.new(0, 1)
+	divider.Position = UDim2.new(0, 0, 1, -2)
+	divider.Size = UDim2.new(1, 0, 0, 1)
+	divider.BackgroundColor3 = Library.ThemeSlots.SubText
+	divider.BackgroundTransparency = 0.85
+	divider.BorderSizePixel = 0
+	divider.Parent = header
+	self:_RegisterTheming(header)
+	return header
 end
 function Library:_SelectTab(tab)
 	if self.ActiveTab == tab then return end
@@ -3697,7 +3794,23 @@ function Library:CreateSlider(tab, opts)
 	row.Parent = tab.Page
 	self:_RegisterTheming(row)
 	local nameLabel = row:FindFirstChild("FeatureName")
-	if nameLabel then nameLabel.Text = opts.Name or "Slider" end
+	if nameLabel then
+		nameLabel.Text = opts.Name or "Slider"
+		nameLabel.Size = UDim2.new(0.62, 0, nameLabel.Size.Y.Scale, nameLabel.Size.Y.Offset)
+	end
+	local valueLabel = Instance.new("TextLabel")
+	valueLabel.Name = "ValueLabel"
+	valueLabel.BackgroundTransparency = 1
+	valueLabel.AnchorPoint = Vector2.new(1, 0)
+	valueLabel.Position = nameLabel and UDim2.new(0.98, 0, nameLabel.Position.Y.Scale, nameLabel.Position.Y.Offset) or UDim2.new(0.98, 0, 0.14, 0)
+	valueLabel.Size = nameLabel and UDim2.new(0.3, 0, nameLabel.Size.Y.Scale, nameLabel.Size.Y.Offset) or UDim2.new(0.3, 0, 0.3, 0)
+	valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+	valueLabel.TextYAlignment = Enum.TextYAlignment.Center
+	valueLabel.TextScaled = true
+	valueLabel.FontFace = nameLabel and nameLabel.FontFace or Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+	valueLabel.TextColor3 = Library.ThemeSlots.SubText
+	valueLabel.Parent = row
+	self:_RegisterTheming(valueLabel)
 	local container = row:FindFirstChild("SliderContainer")
 	local slider = container:FindFirstChild("Slider")
 	local bar = slider:FindFirstChild("SliderBar")
@@ -3712,6 +3825,7 @@ function Library:CreateSlider(tab, opts)
 		local alpha = alphaFromValue(value)
 		local info = instant and TweenInfo.new(0) or FAST
 		Tween(bar, info, { Size = UDim2.new(alpha, 0, bar.Size.Y.Scale, bar.Size.Y.Offset) })
+		valueLabel.Text = tostring(value)
 	end
 	refresh(true)
 	local dragging = false
@@ -3910,6 +4024,7 @@ function Library:CreateDropdown(tab, opts)
 		for i, optionName in ipairs(options) do
 			local optRow = self.Templates.PopupOption:Clone()
 			optRow.LayoutOrder = i
+			optRow.Size = UDim2.new(1, -6, 0, 44)
 			local optLabel = optRow:FindFirstChild("WelcomeTag")
 			if optLabel then optLabel.Text = tostring(optionName) end
 			optRow.Parent = self.PopupScroll
@@ -3973,6 +4088,7 @@ function Library:Notify(title, body, duration)
 		if child:IsA("GuiObject") then child:Destroy() end
 	end
 	local optRow = self.Templates.PopupOption:Clone()
+	optRow.Size = UDim2.new(1, -6, 0, 44)
 	local optLabel = optRow:FindFirstChild("WelcomeTag")
 	local brandLabel = optRow:FindFirstChild("BrandTag")
 	if optLabel then optLabel.Text = title or "" end
