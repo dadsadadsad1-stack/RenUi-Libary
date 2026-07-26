@@ -3077,12 +3077,14 @@ local function BindHover(button, opts)
 	button.MouseLeave:Connect(function()
 		Tween(button, FAST, { Size = baseSize })
 	end)
-	button.MouseButton1Down:Connect(function()
-		Tween(button, FAST, { Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset - 1, baseSize.Y.Scale, baseSize.Y.Offset - 1) })
-	end)
-	button.MouseButton1Up:Connect(function()
-		Tween(button, FAST, { Size = hoverSize })
-	end)
+	if button:IsA("GuiButton") then
+		button.MouseButton1Down:Connect(function()
+			Tween(button, FAST, { Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset - 1, baseSize.Y.Scale, baseSize.Y.Offset - 1) })
+		end)
+		button.MouseButton1Up:Connect(function()
+			Tween(button, FAST, { Size = hoverSize })
+		end)
+	end
 end
 function Library.new(config)
 	config = config or {}
@@ -3595,6 +3597,34 @@ function Library:CreateKeybind(tab, opts)
 		end,
 	}
 end
+local function LabelToTextBox(label)
+	if label:IsA("TextBox") then return label end
+	local box = Instance.new("TextBox")
+	box.Name = label.Name
+	box.Size = label.Size
+	box.Position = label.Position
+	box.AnchorPoint = label.AnchorPoint
+	box.BackgroundColor3 = label.BackgroundColor3
+	box.BackgroundTransparency = label.BackgroundTransparency
+	box.BorderSizePixel = label.BorderSizePixel
+	box.BorderColor3 = label.BorderColor3
+	box.TextColor3 = label.TextColor3
+	box.TextSize = label.TextSize
+	box.TextScaled = label.TextScaled
+	box.TextWrapped = label.TextWrapped
+	box.TextXAlignment = label.TextXAlignment
+	box.TextYAlignment = label.TextYAlignment
+	box.FontFace = label.FontFace
+	box.ZIndex = label.ZIndex
+	box.LayoutOrder = label.LayoutOrder
+	box.ClearTextOnFocus = false
+	box.PlaceholderText = label.Text
+	box.PlaceholderColor3 = label.TextColor3
+	box.Text = ""
+	box.Parent = label.Parent
+	label:Destroy()
+	return box
+end
 function Library:CreateTextbox(tab, opts)
 	opts = opts or {}
 	local row = self.Templates.Textbox:Clone()
@@ -3604,7 +3634,7 @@ function Library:CreateTextbox(tab, opts)
 	local nameLabel = row:FindFirstChild("FeatureName")
 	local descLabel = row:FindFirstChild("FeatureDescription")
 	local inputHolder = row:FindFirstChild("Input")
-	local box = inputHolder:FindFirstChild("Inputvalue")
+	local box = LabelToTextBox(inputHolder:FindFirstChild("Inputvalue"))
 	local toggleRow = row:FindFirstChild("ToggleON/OFF")
 	if toggleRow then toggleRow.Visible = false end
 	if nameLabel then nameLabel.Text = opts.Name or "Textbox" end
@@ -3617,7 +3647,9 @@ function Library:CreateTextbox(tab, opts)
 		end
 	end
 	box.Text = opts.Default or ""
-	box.PlaceholderText = opts.Placeholder or box.PlaceholderText
+	if opts.Placeholder then
+		box.PlaceholderText = opts.Placeholder
+	end
 	box.Focused:Connect(function()
 		Tween(inputHolder, FAST, { BackgroundTransparency = 0 })
 	end)
