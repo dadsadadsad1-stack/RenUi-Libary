@@ -4230,6 +4230,27 @@ function Library.new(config)
 	self._popupMaxHeight = self.SelectPopup.Size.Y.Scale * self.Popup.AbsoluteSize.Y
 		+ self.SelectPopup.Size.Y.Offset
 
+	do
+		local baseH = self._popupMaxHeight
+		local titleTopPx, titleHeightPx = 0.04999 * baseH, 0.08 * baseH
+		local exitTopPx, exitSidePx = 0.064 * baseH, 0.064 * baseH
+		local scrollTopPx = 0.18617 * baseH
+		local scrollBottomMarginPx = (1 - 0.18617 - 0.764) * baseH
+
+		self.PopupTitle.Position = UDim2.new(self.PopupTitle.Position.X.Scale, 0, 0, titleTopPx)
+		self.PopupTitle.Size = UDim2.new(self.PopupTitle.Size.X.Scale, 0, 0, titleHeightPx)
+
+		if self.PopupExitBtn then
+			self.PopupExitBtn.Position = UDim2.new(self.PopupExitBtn.Position.X.Scale, 0, 0, exitTopPx)
+			self.PopupExitBtn.Size = UDim2.new(self.PopupExitBtn.Size.X.Scale, 0, 0, exitSidePx)
+		end
+
+		self.PopupScroll.Position = UDim2.new(self.PopupScroll.Position.X.Scale, 0, 0, scrollTopPx)
+		self.PopupScroll.Size = UDim2.new(self.PopupScroll.Size.X.Scale, 0, 1, -(scrollTopPx + scrollBottomMarginPx))
+
+		self._popupChromeHeight = scrollTopPx + scrollBottomMarginPx
+	end
+
 	self.Tabs = {}
 	self.ActiveTab = nil
 
@@ -4764,6 +4785,142 @@ function Library:CreateSection(tab, name, icon)
 	return header
 end
 
+function Library:CreateAdvancedSection(tab, name, icon, opts)
+	opts = opts or {}
+	local startExpanded = opts.Expanded
+	if startExpanded == nil then startExpanded = true end
+
+	local header = Instance.new("Frame")
+	header.Name = "AdvSectionHeader_" .. name
+	header.BackgroundTransparency = 1
+	header.Size = UDim2.new(1, 0, 0, 30)
+	header.LayoutOrder = #tab.Page:GetChildren()
+	header.Parent = tab.Page
+
+	local sample = self.Templates.Toggle:FindFirstChild("FeatureName")
+	local font = sample and sample.FontFace or Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
+
+	local xOffset = 0
+	local resolvedIcon = icon and ResolveIcon(icon)
+	if resolvedIcon then
+		local iconLabel = Instance.new("ImageLabel")
+		iconLabel.Name = "SectionIcon"
+		iconLabel.BackgroundTransparency = 1
+		iconLabel.AnchorPoint = Vector2.new(0, 0.5)
+		iconLabel.Position = UDim2.new(0, 2, 0.5, 0)
+		iconLabel.Size = UDim2.new(0, 18, 0, 18)
+		iconLabel.Image = resolvedIcon
+		iconLabel.ImageColor3 = Library.ThemeSlots.SubText
+		iconLabel.Parent = header
+		xOffset = 24
+	end
+
+	local chevron = Instance.new("ImageLabel")
+	chevron.Name = "Chevron"
+	chevron.BackgroundTransparency = 1
+	chevron.AnchorPoint = Vector2.new(1, 0.5)
+	chevron.Position = UDim2.new(1, -6, 0.5, 0)
+	chevron.Size = UDim2.new(0, 16, 0, 16)
+	chevron.Image = ResolveIcon("chevron-down")
+	chevron.ImageColor3 = Library.ThemeSlots.SubText
+	chevron.Parent = header
+
+	local label = Instance.new("TextLabel")
+	label.Name = "SectionLabel"
+	label.BackgroundTransparency = 1
+	label.Position = UDim2.new(0, xOffset + 2, 0, 0)
+	label.Size = UDim2.new(1, -(xOffset + 34), 1, 0)
+	label.Text = name
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.TextYAlignment = Enum.TextYAlignment.Center
+	label.TextSize = 18
+	label.FontFace = font
+	label.TextColor3 = Library.ThemeSlots.SubText
+	label.Parent = header
+
+	local divider = Instance.new("Frame")
+	divider.Name = "SectionAccent"
+	divider.AnchorPoint = Vector2.new(0, 1)
+	divider.Position = UDim2.new(0, xOffset + 2, 1, 0)
+	divider.Size = UDim2.new(0, 0, 0, 3)
+	divider.BackgroundColor3 = Library.ThemeSlots.Accent
+	divider.BorderSizePixel = 0
+	divider.Parent = header
+
+	local dividerCorner = Instance.new("UICorner")
+	dividerCorner.CornerRadius = UDim.new(1, 0)
+	dividerCorner.Parent = divider
+
+	local hitBtn = Instance.new("TextButton")
+	hitBtn.BackgroundTransparency = 1
+	hitBtn.Text = ""
+	hitBtn.Size = UDim2.new(1, 0, 1, 0)
+	hitBtn.ZIndex = header.ZIndex + 1
+	hitBtn.Parent = header
+
+	local wrapper = Instance.new("Frame")
+	wrapper.Name = "AdvSectionBody_" .. name
+	wrapper.BackgroundTransparency = 1
+	wrapper.ClipsDescendants = true
+	wrapper.Size = UDim2.new(1, 0, 0, 0)
+	wrapper.LayoutOrder = header.LayoutOrder + 1
+	wrapper.Parent = tab.Page
+
+	local content = Instance.new("Frame")
+	content.Name = "Content"
+	content.BackgroundTransparency = 1
+	content.Size = UDim2.new(1, 0, 0, 0)
+	content.AutomaticSize = Enum.AutomaticSize.Y
+	content.Parent = wrapper
+
+	local contentLayout = Instance.new("UIListLayout")
+	contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	contentLayout.Padding = UDim.new(0, 6)
+	contentLayout.Parent = content
+
+	self:_RegisterTheming(header)
+	Tween(divider, OPEN_EASE, { Size = UDim2.new(0, 28, 0, 3) })
+
+	local expanded = startExpanded
+	local function applyState(animate)
+		local targetRotation = expanded and 0 or 180
+		local targetHeight = expanded and content.AbsoluteSize.Y or 0
+		if animate then
+			Tween(chevron, OPEN_EASE, { Rotation = targetRotation })
+			Tween(wrapper, OPEN_EASE, { Size = UDim2.new(1, 0, 0, targetHeight) })
+		else
+			chevron.Rotation = targetRotation
+			wrapper.Size = UDim2.new(1, 0, 0, targetHeight)
+		end
+	end
+
+	hitBtn.MouseButton1Click:Connect(function()
+		expanded = not expanded
+		applyState(true)
+	end)
+
+	content:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		if expanded then
+			wrapper.Size = UDim2.new(1, 0, 0, content.AbsoluteSize.Y)
+		end
+	end)
+
+	applyState(false)
+
+	return {
+		Page = content,
+		Header = header,
+		Wrapper = wrapper,
+		SetExpanded = function(_, state)
+			expanded = state
+			applyState(true)
+		end,
+		IsExpanded = function()
+			return expanded
+		end,
+	}
+end
+
 function Library:_SelectTab(tab)
 	if self.ActiveTab == tab then return end
 	local previous = self.ActiveTab
@@ -5188,10 +5345,10 @@ function Library:CreateDropdown(tab, opts)
 		end
 
 		local contentHeight = (#options * 44) + math.max(0, #options - 1) * 6
-		local neededHeight = (contentHeight + 24) / 0.764
-		local minHeight = 160
+		local chrome = self._popupChromeHeight or 118
+		local neededHeight = chrome + contentHeight
 		local maxHeight = self._popupMaxHeight or neededHeight
-		neededHeight = math.clamp(neededHeight, minHeight, maxHeight)
+		neededHeight = math.min(neededHeight, maxHeight)
 
 		local baseSize = self._popupGoalSize or self.SelectPopup.Size
 		self._popupGoalSize = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, 0, neededHeight)
@@ -5257,8 +5414,9 @@ function Library:Notify(title, body, duration)
 	self:_RegisterTheming(optRow)
 
 	local baseSize = self._popupGoalSize or self.SelectPopup.Size
-	local neededHeight = (44 + 24) / 0.764
-	neededHeight = math.clamp(neededHeight, 160, self._popupMaxHeight or neededHeight)
+	local chrome = self._popupChromeHeight or 118
+	local neededHeight = chrome + 44
+	neededHeight = math.min(neededHeight, self._popupMaxHeight or neededHeight)
 	self._popupGoalSize = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, 0, neededHeight)
 
 	self:_ShowPopup()
