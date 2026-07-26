@@ -1,4 +1,3 @@
-
 local TweenService  = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
@@ -487,7 +486,7 @@ G2L["32"]["BackgroundTransparency"] = 1;
 
 G2L["33"] = Instance.new("UIListLayout", G2L["32"]);
 G2L["33"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-G2L["33"]["Padding"] = UDim.new(0, 6);
+G2L["33"]["Padding"] = UDim.new(0.04, 0);
 G2L["33"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 G2L["34"] = Instance.new("Frame", G2L["32"]);
@@ -579,7 +578,7 @@ G2L["3f"]["CornerRadius"] = UDim.new(1.97311, 0);
 G2L["40"] = Instance.new("Frame", G2L["32"]);
 G2L["40"]["BorderSizePixel"] = 0;
 G2L["40"]["BackgroundColor3"] = Color3.fromRGB(30, 30, 36);
-G2L["40"]["Size"] = UDim2.new(1, 0, 0, 50);
+G2L["40"]["Size"] = UDim2.new(0.9803, 0, 0.40816, 0);
 G2L["40"]["Position"] = UDim2.new(0.0108, 0, 0, 0);
 G2L["40"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["40"]["Name"] = [[SelectionFeature]];
@@ -763,7 +762,7 @@ G2L["55"]["CornerRadius"] = UDim.new(3.33333, 0);
 G2L["56"] = Instance.new("Frame", G2L["32"]);
 G2L["56"]["BorderSizePixel"] = 0;
 G2L["56"]["BackgroundColor3"] = Color3.fromRGB(30, 30, 36);
-G2L["56"]["Size"] = UDim2.new(1, 0, 0, 80);
+G2L["56"]["Size"] = UDim2.new(0.979, 0, 0.307, 0);
 G2L["56"]["Position"] = UDim2.new(0, 0, 0, 0);
 G2L["56"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["56"]["Name"] = [[TInputFeature]];
@@ -867,7 +866,7 @@ G2L["5f"]["Position"] = UDim2.new(0.0834, 0, 0.19167, 0);
 G2L["60"] = Instance.new("Frame", G2L["32"]);
 G2L["60"]["BorderSizePixel"] = 0;
 G2L["60"]["BackgroundColor3"] = Color3.fromRGB(30, 30, 36);
-G2L["60"]["Size"] = UDim2.new(1, 0, 0, 80);
+G2L["60"]["Size"] = UDim2.new(0.98, 0, 0.204, 0);
 G2L["60"]["Position"] = UDim2.new(-0.4292, 0, 0, 0);
 G2L["60"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["60"]["Name"] = [[DLSliderFeature]];
@@ -1550,7 +1549,7 @@ G2L["b0"]["Position"] = UDim2.new(0.03622, 0, 0.14, 0);
 G2L["b1"] = Instance.new("Frame", G2L["32"]);
 G2L["b1"]["BorderSizePixel"] = 0;
 G2L["b1"]["BackgroundColor3"] = Color3.fromRGB(30, 30, 36);
-G2L["b1"]["Size"] = UDim2.new(1, 0, 0, 50);
+G2L["b1"]["Size"] = UDim2.new(0.9792, 0, 0.30675, 0);
 G2L["b1"]["Position"] = UDim2.new(-0.4292, 0, 0, 0);
 G2L["b1"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["b1"]["Name"] = [[AFeature]];
@@ -2288,7 +2287,7 @@ G2L["10b"]["Position"] = UDim2.new(0.0834, 0, 0.19167, 0);
 G2L["10c"] = Instance.new("Frame", G2L["32"]);
 G2L["10c"]["BorderSizePixel"] = 0;
 G2L["10c"]["BackgroundColor3"] = Color3.fromRGB(30, 30, 36);
-G2L["10c"]["Size"] = UDim2.new(1, 0, 0, 50);
+G2L["10c"]["Size"] = UDim2.new(0.979, 0, 0.307, 0);
 G2L["10c"]["Position"] = UDim2.new(0, 0, 0, 0);
 G2L["10c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["10c"]["Name"] = [[KFeature]];
@@ -3115,13 +3114,13 @@ G2L["162"] = Instance.new("Frame", G2L["160"]);
 G2L["162"]["Visible"] = false;
 G2L["162"]["BorderSizePixel"] = 0;
 G2L["162"]["BackgroundColor3"] = Color3.fromRGB(21, 21, 25);
-G2L["162"]["Size"] = UDim2.new(0.28, 0, 0.45, 0);
+G2L["162"]["Size"] = UDim2.new(0.39393, 0, 0.71533, 0);
 G2L["162"]["Position"] = UDim2.new(0.30254, 0, 0.14031, 0);
 G2L["162"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["162"]["Name"] = [[SelectPopup]];
 
 G2L["163"] = Instance.new("UICorner", G2L["162"]);
-G2L["163"]["CornerRadius"] = UDim.new(0, 12);
+G2L["163"]["CornerRadius"] = UDim.new(0.08, 0);
 
 G2L["164"] = Instance.new("TextLabel", G2L["162"]);
 G2L["164"]["TextWrapped"] = true;
@@ -3153,13 +3152,13 @@ G2L["165"]["BackgroundTransparency"] = 1;
 
 G2L["166"] = Instance.new("UIListLayout", G2L["165"]);
 G2L["166"]["HorizontalAlignment"] = Enum.HorizontalAlignment.Center;
-G2L["166"]["Padding"] = UDim.new(0, 4);
+G2L["166"]["Padding"] = UDim.new(0.06, 0);
 G2L["166"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
 
 G2L["167"] = Instance.new("Frame", G2L["165"]);
 G2L["167"]["BorderSizePixel"] = 0;
 G2L["167"]["BackgroundColor3"] = Color3.fromRGB(71, 71, 85);
-G2L["167"]["Size"] = UDim2.new(1, -6, 0, 44);
+G2L["167"]["Size"] = UDim2.new(0.98649, 0, 0.36562, 0);
 G2L["167"]["Position"] = UDim2.new(0.00507, 0, 0, 0);
 G2L["167"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["167"]["Name"] = [[Option]];
@@ -3339,7 +3338,7 @@ G2L["179"]["Position"] = UDim2.new(0.71127, 0, 0.23791, 0);
 G2L["17a"] = Instance.new("Frame", G2L["165"]);
 G2L["17a"]["BorderSizePixel"] = 0;
 G2L["17a"]["BackgroundColor3"] = Color3.fromRGB(47, 47, 55);
-G2L["17a"]["Size"] = UDim2.new(1, -6, 0, 44);
+G2L["17a"]["Size"] = UDim2.new(0.98649, 0, 0.36562, 0);
 G2L["17a"]["Position"] = UDim2.new(0.00507, 0, 0, 0);
 G2L["17a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 G2L["17a"]["Name"] = [[Option]];
@@ -4185,13 +4184,13 @@ function Library.new(config)
 	self.PopupExitBtn   = G["187"]
 
 	local templates = {
-		NavBtn   = G2L["14f"]:Clone(),
-		Toggle   = G2L["b1"]:Clone(),
-		Slider   = G2L["60"]:Clone(),
-		Keybind  = G2L["10c"]:Clone(),
-		Textbox  = G2L["56"]:Clone(),
-		Dropdown = G2L["40"]:Clone(),
-		PopupOption = G2L["17a"]:Clone(),
+		NavBtn   = G["14f"]:Clone(),
+		Toggle   = G["b1"]:Clone(),
+		Slider   = G["60"]:Clone(),
+		Keybind  = G["10c"]:Clone(),
+		Textbox  = G["56"]:Clone(),
+		Dropdown = G["40"]:Clone(),
+		PopupOption = G["17a"]:Clone(),
 	}
 	self.Templates = templates
 
@@ -4227,6 +4226,9 @@ function Library.new(config)
 	self._popupGoalPos = self.SelectPopup.Position
 	self._popupBaseAlpha = self.SelectPopup.BackgroundTransparency
 	self._backdropBaseAlpha = self.Popup.BackgroundTransparency
+
+	self._popupMaxHeight = self.SelectPopup.Size.Y.Scale * self.Popup.AbsoluteSize.Y
+		+ self.SelectPopup.Size.Y.Offset
 
 	self.Tabs = {}
 	self.ActiveTab = nil
@@ -4742,16 +4744,23 @@ function Library:CreateSection(tab, name, icon)
 	label.Parent = header
 
 	local divider = Instance.new("Frame")
-	divider.Name = "SectionDivider"
+	divider.Name = "SectionAccent"
+
 	divider.AnchorPoint = Vector2.new(0, 1)
-	divider.Position = UDim2.new(0, 0, 1, -2)
-	divider.Size = UDim2.new(1, 0, 0, 1)
-	divider.BackgroundColor3 = Library.ThemeSlots.SubText
-	divider.BackgroundTransparency = 0.85
+	divider.Position = UDim2.new(0, xOffset + 2, 1, 0)
+	divider.Size = UDim2.new(0, 0, 0, 3)
+	divider.BackgroundColor3 = Library.ThemeSlots.Accent
 	divider.BorderSizePixel = 0
 	divider.Parent = header
 
+	local dividerCorner = Instance.new("UICorner")
+	dividerCorner.CornerRadius = UDim.new(1, 0)
+	dividerCorner.Parent = divider
+
 	self:_RegisterTheming(header)
+
+	Tween(divider, OPEN_EASE, { Size = UDim2.new(0, 28, 0, 3) })
+
 	return header
 end
 
@@ -5107,7 +5116,7 @@ function Library:CreateDropdown(tab, opts)
 	row.Name = opts.Name or "Dropdown"
 	row.LayoutOrder = opts.Order or #tab.Page:GetChildren()
 
-	row.Size = UDim2.new(1, 0, 0, 50)
+	row.Size = UDim2.new(0.9792, 0, 0.30675, 0)
 	row.Parent = tab.Page
 	self:_RegisterTheming(row)
 
@@ -5178,6 +5187,15 @@ function Library:CreateDropdown(tab, opts)
 			end)
 		end
 
+		local contentHeight = (#options * 44) + math.max(0, #options - 1) * 6
+		local neededHeight = (contentHeight + 24) / 0.764
+		local minHeight = 160
+		local maxHeight = self._popupMaxHeight or neededHeight
+		neededHeight = math.clamp(neededHeight, minHeight, maxHeight)
+
+		local baseSize = self._popupGoalSize or self.SelectPopup.Size
+		self._popupGoalSize = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, 0, neededHeight)
+
 		self:_ShowPopup()
 	end
 
@@ -5238,6 +5256,11 @@ function Library:Notify(title, body, duration)
 	optRow.Parent = self.PopupScroll
 	self:_RegisterTheming(optRow)
 
+	local baseSize = self._popupGoalSize or self.SelectPopup.Size
+	local neededHeight = (44 + 24) / 0.764
+	neededHeight = math.clamp(neededHeight, 160, self._popupMaxHeight or neededHeight)
+	self._popupGoalSize = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, 0, neededHeight)
+
 	self:_ShowPopup()
 
 	task.delay(duration, function()
@@ -5268,97 +5291,6 @@ end
 function Library:Destroy()
 	if self.Gui then
 		self.Gui:Destroy()
-	end
-end
-
-function Library:CreateCategoryFilter(tab, categories)
-	categories = categories or {
-		{ Name = "General",  OrderMin = 0,   OrderMax = 99   },
-		{ Name = "Farm",     OrderMin = 100, OrderMax = 149  },
-		{ Name = "Extras",   OrderMin = 150, OrderMax = 299  },
-	}
-
-	local btnHeight = 32
-	local btnPadding = 4
-	local containerHeight = btnHeight + 8
-
-	local container = Instance.new("Frame")
-	container.Name = "CategoryBar"
-	container.BackgroundTransparency = 1
-	container.Size = UDim2.new(1, 0, 0, containerHeight)
-	container.LayoutOrder = -1
-	container.Parent = tab.Page
-
-	local list = Instance.new("UIListLayout")
-	list.FillDirection = Enum.FillDirection.Horizontal
-	list.HorizontalAlignment = Enum.HorizontalAlignment.Left
-	list.SortOrder = Enum.SortOrder.LayoutOrder
-	list.Padding = UDim.new(0, btnPadding)
-	list.Parent = container
-
-	local catButtons = {}
-	local activeCat = nil
-
-	for i, cat in ipairs(categories) do
-		local btn = Instance.new("TextButton")
-		btn.Name = "CatBtn_" .. cat.Name
-		btn.Size = UDim2.new(0, 0, 1, 0)
-		btn.AutomaticSize = Enum.AutomaticSize.X
-		btn.BackgroundColor3 = (i == 1) and (Library.ThemeSlots.Accent or Color3.fromRGB(255, 107, 132)) or (Library.ThemeSlots.ElementBG or Color3.fromRGB(30, 30, 36))
-		btn.BorderSizePixel = 0
-		btn.FontFace = Font.new("rbxasset://fonts/families/Ubuntu.json", Enum.FontWeight.Bold, Enum.FontStyle.Normal)
-		btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-		btn.TextSize = 13
-		btn.Text = "  " .. cat.Name .. "  "
-		btn.LayoutOrder = i
-		btn.Parent = container
-
-		local corner = Instance.new("UICorner")
-		corner.CornerRadius = UDim.new(0, 8)
-		corner.Parent = btn
-
-		self:_RegisterTheming(btn)
-		catButtons[i] = { Button = btn, Cat = cat }
-
-		btn.MouseButton1Click:Connect(function()
-			activeCat = cat
-			for j, entry in ipairs(catButtons) do
-				local isActive = (j == i)
-				Tween(entry.Button, SMOOTH, {
-					BackgroundColor3 = isActive
-						and (Library.ThemeSlots.Accent or Color3.fromRGB(255, 107, 132))
-						or  (Library.ThemeSlots.ElementBG or Color3.fromRGB(30, 30, 36)),
-				})
-			end
-			self:_FilterTabByCategory(tab, cat)
-		end)
-	end
-
-	activeCat = categories[1]
-	self:_FilterTabByCategory(tab, activeCat)
-
-	return {
-		SetCategory = function(_, catName)
-			for i, entry in ipairs(catButtons) do
-				if entry.Cat.Name == catName then
-					entry.Button.MouseButton1Click:Fire()
-					break
-				end
-			end
-		end,
-		GetCategories = function() return categories end,
-	}
-end
-
-function Library:_FilterTabByCategory(tab, cat)
-	local orderMin = cat.OrderMin or 0
-	local orderMax = cat.OrderMax or 99999999999999999999999999999999999999999
-
-	for _, child in ipairs(tab.Page:GetChildren()) do
-		if child:IsA("GuiObject") and child.Name ~= "CategoryBar" then
-			local lo = child.LayoutOrder or 0
-			child.Visible = (lo >= orderMin and lo <= orderMax)
-		end
 	end
 end
 
