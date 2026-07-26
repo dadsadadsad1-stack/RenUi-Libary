@@ -1,6 +1,6 @@
 -- RenUi Library - Full Example Script
 -- Load the latest version from GitHub
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/dadsadadsad1-stack/RenUi-Libary/main/RenUi.luau"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/dadsadadsad1-stack/RenUi-Libary/main/RenUi.luau?v=3adad72"))()
 
 -- ============================================
 -- MAIN TAB
