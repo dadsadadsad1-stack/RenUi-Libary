@@ -1,6 +1,13 @@
 -- RenUi Library - Full Example Script
 -- Load the latest version from GitHub
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/dadsadadsad1-stack/RenUi-Libary/main/RenUi.luau?v=3adad72"))()
+local Lib = loadstring(game:HttpGet("https://raw.githubusercontent.com/dadsadadsad1-stack/RenUi-Libary/main/RenUi.luau?v=4ff31a8"))()
+
+-- Create the library instance (required!)
+local Library = Lib.new({
+	-- Optional config:
+	-- Theme = "Dark",
+	-- Size = UDim2.new(0.7, 0, 0.7, 0),
+})
 
 -- ============================================
 -- MAIN TAB
