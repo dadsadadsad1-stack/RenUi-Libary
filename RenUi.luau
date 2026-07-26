@@ -4735,7 +4735,7 @@ function Library:CreateSection(tab, name, icon)
 	label.Text = name
 	label.TextXAlignment = Enum.TextXAlignment.Left
 	label.TextYAlignment = Enum.TextYAlignment.Center
-	label.TextSize = 18
+	label.TextSize = 22
 	label.FontFace = font
 	label.TextColor3 = Library.ThemeSlots.SubText
 	label.Parent = header
@@ -5147,7 +5147,16 @@ function Library:CreateDropdown(tab, opts)
 			optRow.LayoutOrder = i
 			optRow.Size = UDim2.new(1, -6, 0, 44)
 			local optLabel = optRow:FindFirstChild("WelcomeTag")
-			if optLabel then optLabel.Text = tostring(optionName) end
+			if optLabel then
+				optLabel.Text = tostring(optionName)
+
+				optLabel.Size = UDim2.new(optLabel.Size.X.Scale, optLabel.Size.X.Offset, 1, 0)
+				optLabel.Position = UDim2.new(optLabel.Position.X.Scale, optLabel.Position.X.Offset, 0, 0)
+				optLabel.TextYAlignment = Enum.TextYAlignment.Center
+			end
+
+			local descLabel = optRow:FindFirstChild("BrandTag")
+			if descLabel then descLabel.Visible = false end
 			optRow.Parent = self.PopupScroll
 			self:_RegisterTheming(optRow)
 
