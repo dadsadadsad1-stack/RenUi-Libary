@@ -3462,15 +3462,18 @@ local OPEN_EASE  = TweenInfo.new(0.36, Enum.EasingStyle.Quint, Enum.EasingDirect
 local CLOSE_EASE = TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.In)
 
 Library.ThemeSlots = {
-	Background  = Color3.fromRGB(30, 30, 36),
-	Surface     = Color3.fromRGB(63, 63, 76),
-	Accent      = Color3.fromRGB(193, 193, 233),
-	AccentDark  = Color3.fromRGB(86, 86, 128),
-	AccentLight = Color3.fromRGB(169, 169, 204),
-	Muted       = Color3.fromRGB(101, 101, 122),
-	Text        = Color3.fromRGB(255, 255, 255),
-	SubText     = Color3.fromRGB(123, 123, 149),
-	Danger      = Color3.fromRGB(255, 107, 132),
+	Background   = Color3.fromRGB(30, 30, 36),
+	Surface      = Color3.fromRGB(63, 63, 76),
+	Accent       = Color3.fromRGB(193, 193, 233),
+	AccentDark   = Color3.fromRGB(86, 86, 128),
+	AccentLight  = Color3.fromRGB(169, 169, 204),
+	Muted        = Color3.fromRGB(101, 101, 122),
+	Text         = Color3.fromRGB(255, 255, 255),
+	SubText      = Color3.fromRGB(123, 123, 149),
+	Danger       = Color3.fromRGB(255, 107, 132),
+
+	Title        = Color3.fromRGB(254, 254, 254),
+	SectionTitle = Color3.fromRGB(122, 123, 149),
 }
 
 Library.Presets = {
@@ -4167,6 +4170,7 @@ function Library.new(config)
 	self.Page           = G["2c"]
 	self.PageHeader     = G["2d"]
 	self.PageName       = G["2f"]
+	self.PageName.TextColor3 = Library.ThemeSlots.Title
 	self.PageExitBtn    = G["30"]
 	self.PageContent    = G["32"]
 
@@ -4770,7 +4774,7 @@ function Library:CreateSection(tab, name, icon)
 		iconLabel.Position = UDim2.new(0, 2, 0.5, 0)
 		iconLabel.Size = UDim2.new(0, 18, 0, 18)
 		iconLabel.Image = resolvedIcon
-		iconLabel.ImageColor3 = Library.ThemeSlots.SubText
+		iconLabel.ImageColor3 = Library.ThemeSlots.SectionTitle
 		iconLabel.Parent = header
 		xOffset = 24
 	end
@@ -4785,7 +4789,7 @@ function Library:CreateSection(tab, name, icon)
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.TextSize = 22
 	label.FontFace = font
-	label.TextColor3 = Library.ThemeSlots.SubText
+	label.TextColor3 = Library.ThemeSlots.SectionTitle
 	label.Parent = header
 
 	local divider = Instance.new("Frame")
@@ -4831,7 +4835,7 @@ function Library:CreateAdvancedSection(tab, name, icon, opts)
 		iconLabel.Position = UDim2.new(0, 2, 0.5, 0)
 		iconLabel.Size = UDim2.new(0, 18, 0, 18)
 		iconLabel.Image = resolvedIcon
-		iconLabel.ImageColor3 = Library.ThemeSlots.SubText
+		iconLabel.ImageColor3 = Library.ThemeSlots.SectionTitle
 		iconLabel.Parent = header
 		xOffset = 24
 	end
@@ -4856,7 +4860,7 @@ function Library:CreateAdvancedSection(tab, name, icon, opts)
 	label.TextYAlignment = Enum.TextYAlignment.Center
 	label.TextSize = 18
 	label.FontFace = font
-	label.TextColor3 = Library.ThemeSlots.SubText
+	label.TextColor3 = Library.ThemeSlots.SectionTitle
 	label.Parent = header
 
 	local divider = Instance.new("Frame")
