@@ -4160,6 +4160,8 @@ function Library.new(config)
 
 	self.Window         = G["27"]
 	self.UIHolder       = G["29"]
+
+	self.UIHolder.ClipsDescendants = true
 	self.MainFrame      = G["2b"]
 	self.Page           = G["2c"]
 	self.PageHeader     = G["2d"]
@@ -4765,22 +4767,19 @@ function Library:CreateSection(tab, name, icon)
 	label.Parent = header
 
 	local divider = Instance.new("Frame")
-	divider.Name = "SectionAccent"
+	divider.Name = "SectionDivider"
 
-	divider.AnchorPoint = Vector2.new(0, 1)
-	divider.Position = UDim2.new(0, xOffset + 2, 1, 0)
-	divider.Size = UDim2.new(0, 0, 0, 3)
-	divider.BackgroundColor3 = Library.ThemeSlots.Accent
+	divider.AnchorPoint = Vector2.new(0.5, 1)
+	divider.Position = UDim2.new(0.5, 0, 1, 0)
+	divider.Size = UDim2.new(0, 0, 0, 1)
+	divider.BackgroundColor3 = Library.ThemeSlots.SubText
+	divider.BackgroundTransparency = 0.35
 	divider.BorderSizePixel = 0
 	divider.Parent = header
 
-	local dividerCorner = Instance.new("UICorner")
-	dividerCorner.CornerRadius = UDim.new(1, 0)
-	dividerCorner.Parent = divider
-
 	self:_RegisterTheming(header)
 
-	Tween(divider, OPEN_EASE, { Size = UDim2.new(0, 28, 0, 3) })
+	Tween(divider, OPEN_EASE, { Size = UDim2.new(1, -(xOffset + 4), 0, 1) })
 
 	return header
 end
@@ -4839,17 +4838,14 @@ function Library:CreateAdvancedSection(tab, name, icon, opts)
 	label.Parent = header
 
 	local divider = Instance.new("Frame")
-	divider.Name = "SectionAccent"
-	divider.AnchorPoint = Vector2.new(0, 1)
-	divider.Position = UDim2.new(0, xOffset + 2, 1, 0)
-	divider.Size = UDim2.new(0, 0, 0, 3)
-	divider.BackgroundColor3 = Library.ThemeSlots.Accent
+	divider.Name = "SectionDivider"
+	divider.AnchorPoint = Vector2.new(0.5, 1)
+	divider.Position = UDim2.new(0.5, -14, 1, 0)
+	divider.Size = UDim2.new(0, 0, 0, 1)
+	divider.BackgroundColor3 = Library.ThemeSlots.SubText
+	divider.BackgroundTransparency = 0.35
 	divider.BorderSizePixel = 0
 	divider.Parent = header
-
-	local dividerCorner = Instance.new("UICorner")
-	dividerCorner.CornerRadius = UDim.new(1, 0)
-	dividerCorner.Parent = divider
 
 	local hitBtn = Instance.new("TextButton")
 	hitBtn.BackgroundTransparency = 1
@@ -4879,7 +4875,7 @@ function Library:CreateAdvancedSection(tab, name, icon, opts)
 	contentLayout.Parent = content
 
 	self:_RegisterTheming(header)
-	Tween(divider, OPEN_EASE, { Size = UDim2.new(0, 28, 0, 3) })
+	Tween(divider, OPEN_EASE, { Size = UDim2.new(1, -(xOffset + 32), 0, 1) })
 
 	local expanded = startExpanded
 	local function applyState(animate)
@@ -5202,7 +5198,7 @@ function Library:CreateKeybind(tab, opts)
 			Tween(input, FAST, { BackgroundTransparency = 0 })
 			if opts.Changed then task.spawn(opts.Changed, current) end
 		elseif not listening and not gpe and inp.KeyCode == current and opts.Callback then
-			task.spawn(opts.Callback)
+			task.spawn(opts.Callback, current)
 		end
 	end)
 
