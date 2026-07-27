@@ -10,6 +10,7 @@ local function BuildInterface()
 local G2L = {};
 
 G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["ResetOnSpawn"] = false;
 G2L["1"]["IgnoreGuiInset"] = true;
 G2L["1"]["ScreenInsets"] = Enum.ScreenInsets.None;
 G2L["1"]["Name"] = [[VexonHubV2]];
@@ -4178,6 +4179,19 @@ function Library.new(config)
 	self.RankTag        = G["159"]
 	self.RankName       = G["15b"]
 
+	self.UserImg.AnchorPoint = Vector2.new(0, 0.5)
+	self.UserImg.Position = UDim2.new(0, 8, 0.5, 0)
+	self.UserImg.Size = UDim2.new(0, 32, 0, 32)
+	self.UserImg.ScaleType = Enum.ScaleType.Crop
+	local avatarCorner = Instance.new("UICorner")
+	avatarCorner.CornerRadius = UDim.new(0.5, 0)
+	avatarCorner.Parent = self.UserImg
+
+	self.DisplayName.Position = UDim2.new(0, 48, self.DisplayName.Position.Y.Scale, 0)
+	self.DisplayName.Size = UDim2.new(1, -56, self.DisplayName.Size.Y.Scale, 0)
+	self.Username.Position = UDim2.new(0, 48, self.Username.Position.Y.Scale, 0)
+	self.Username.Size = UDim2.new(1, -56, self.Username.Size.Y.Scale, 0)
+
 	self.Popup          = G["15f"]
 	self.SelectPopup    = G["162"]
 	self.PopupTitle     = G["164"]
@@ -4653,6 +4667,14 @@ function Library:_SetupKeySystem(config)
 end
 
 function Library:_SetupPlayerInfo()
+
+	self.DisplayName.TextScaled = false
+	self.DisplayName.TextSize = 15
+	self.DisplayName.TextTruncate = Enum.TextTruncate.AtEnd
+	self.Username.TextScaled = false
+	self.Username.TextSize = 13
+	self.Username.TextTruncate = Enum.TextTruncate.AtEnd
+
 	self.DisplayName.Text = LocalPlayer.DisplayName
 	self.Username.Text = "@" .. LocalPlayer.Name
 	local ok, content = pcall(function()
