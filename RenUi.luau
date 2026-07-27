@@ -4988,14 +4988,25 @@ function Library:CreateToggle(tab, opts)
 	local onImg = switch:FindFirstChild("ON")
 	local offImg = switch:FindFirstChild("OFF")
 
+	switch.AnchorPoint = Vector2.new(0, 0.5)
+	switch.Position = UDim2.new(switch.Position.X.Scale, switch.Position.X.Offset, 0.5, 0)
+	switch.Size = UDim2.new(0, 42, 0, 22)
+
 	onImg.Visible = true
 	offImg.Visible = true
 
-	if nameLabel then nameLabel.Text = opts.Name or "Toggle" end
+	if nameLabel then
+		nameLabel.Text = opts.Name or "Toggle"
+
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
+	end
 	if descLabel then
 		if opts.Description then
 			descLabel.Text = opts.Description
 			descLabel.Visible = true
+			descLabel.TextScaled = false
+			descLabel.TextSize = 14
 		else
 			descLabel.Visible = false
 		end
@@ -5020,7 +5031,8 @@ function Library:CreateToggle(tab, opts)
 		ApplyToggleVisual(onImg, offImg, state)
 
 		local baseSize = switch.Size
-		Tween(switch, FAST, { Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, baseSize.Y.Scale * 0.85, baseSize.Y.Offset) })
+
+		Tween(switch, FAST, { Size = UDim2.new(baseSize.X.Scale, baseSize.X.Offset, baseSize.Y.Scale, baseSize.Y.Offset * 0.85) })
 		task.delay(0.08, function()
 			Tween(switch, SPRING, { Size = baseSize })
 		end)
@@ -5053,6 +5065,8 @@ function Library:CreateSlider(tab, opts)
 		nameLabel.Text = opts.Name or "Slider"
 
 		nameLabel.Size = UDim2.new(0.62, 0, nameLabel.Size.Y.Scale, nameLabel.Size.Y.Offset)
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
 	end
 
 	local valueLabel = Instance.new("TextLabel")
@@ -5147,11 +5161,17 @@ function Library:CreateKeybind(tab, opts)
 	local input = row:FindFirstChild("KeybindInput")
 	local keyLabel = input:FindFirstChild("KeyInput")
 
-	if nameLabel then nameLabel.Text = opts.Name or "Keybind" end
+	if nameLabel then
+		nameLabel.Text = opts.Name or "Keybind"
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
+	end
 	if descLabel then
 		if opts.Description then
 			descLabel.Text = opts.Description
 			descLabel.Visible = true
+			descLabel.TextScaled = false
+			descLabel.TextSize = 14
 		else
 			descLabel.Visible = false
 		end
@@ -5243,11 +5263,17 @@ function Library:CreateTextbox(tab, opts)
 	local toggleRow = row:FindFirstChild("ToggleON/OFF")
 	if toggleRow then toggleRow.Visible = false end
 
-	if nameLabel then nameLabel.Text = opts.Name or "Textbox" end
+	if nameLabel then
+		nameLabel.Text = opts.Name or "Textbox"
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
+	end
 	if descLabel then
 		if opts.Description then
 			descLabel.Text = opts.Description
 			descLabel.Visible = true
+			descLabel.TextScaled = false
+			descLabel.TextSize = 14
 		else
 			descLabel.Visible = false
 		end
@@ -5291,11 +5317,17 @@ function Library:CreateDropdown(tab, opts)
 	local extraToggle = row:FindFirstChild("ToggleBtn")
 	if extraToggle then extraToggle.Visible = false end
 
-	if nameLabel then nameLabel.Text = opts.Name or "Dropdown" end
+	if nameLabel then
+		nameLabel.Text = opts.Name or "Dropdown"
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
+	end
 	if descLabel then
 		if opts.Description then
 			descLabel.Text = opts.Description
 			descLabel.Visible = true
+			descLabel.TextScaled = false
+			descLabel.TextSize = 14
 		else
 			descLabel.Visible = false
 		end
@@ -5400,6 +5432,8 @@ function Library:CreateLabel(tab, text, order)
 		nameLabel.Size = UDim2.new(nameLabel.Size.X.Scale, nameLabel.Size.X.Offset, 1, 0)
 		nameLabel.Position = UDim2.new(nameLabel.Position.X.Scale, nameLabel.Position.X.Offset, 0, 0)
 		nameLabel.TextYAlignment = Enum.TextYAlignment.Center
+		nameLabel.TextScaled = false
+		nameLabel.TextSize = 16
 	end
 	self:_RegisterTheming(row)
 	return row
